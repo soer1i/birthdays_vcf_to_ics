@@ -1,3 +1,9 @@
+import uuid
+
+calendar_header = '''BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Example//NONSGML Calendar//EN
+X-WR-Timezone: Europe/London\n'''
 
 def parse_vcf(filename):
     contacts_with_birthdays = []
@@ -24,12 +30,27 @@ def parse_vcf(filename):
     return contacts_with_birthdays
 
 def write_ics(contacts):
-    with open("birthday_output_calendar.ics", "w") as f:
-        f.write("BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Posteo Webmail//NONSGML Calendar//EN\nX-WR-Timezone: Europe/London\n")
+    with open("output_example.ics", "w") as f:
+        f.write(calendar_header)
         for contact in contacts:
-            f.write(f"BEGIN:VEVENT\nDTSTART:{contact[1]}T100000Z\nDTEND:{contact[1]}T110000Z\nRRULE:FREQ=YEARLY;UNTIL=20371231T230000Z;INTERVAL=1\nDTSTAMP:{contact[1]}T133638Z\nSEQUENCE:1754832998\nSUMMARY:Birthday: {contact[0]}\nCATEGORIES:None\nEND:VEVENT\n")
+            f.write(f'''BEGIN:VEVENT
+DTSTART:{contact[1]}T100000Z
+DTEND:{contact[1]}T110000Z
+RRULE:FREQ=YEARLY;UNTIL=20371231T230000Z;INTERVAL=1
+DTSTAMP:{contact[1]}T133638Z
+SEQUENCE:1754832998
+SUMMARY:Birthday: {contact[0]}
+CATEGORIES:None
+UID:{str(uuid.uuid4())}
+BEGIN:VALARM
+ACTION:DISPLAY
+SUMMARY:Birthday: {contact[0]}
+TRIGGER:-P0DT1800S
+END:VALARM
+END:VEVENT\n''')
         f.write("END:VCALENDAR")
 
-contacts_with_birthdays = parse_vcf("contacts.vcf")
-print(f'found {len(contacts_with_birthdays)} contacts with birthdays')
-write_ics(contacts_with_birthdays)
+if __name__ == "__main__":
+    contacts_with_birthdays = parse_vcf("input_example.vcf")
+    print(f'found {len(contacts_with_birthdays)} contacts with birthdays')
+    write_ics(contacts_with_birthdays)
